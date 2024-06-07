@@ -12,10 +12,13 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { ChatCompletionMessageParam } from "openai/resources/index.mjs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import ReactMarkdown from "react-markdown";
+
 
 // Local here
 import { Heading } from "@/components/heading";
-import { formSchema } from "./constants";
+import { formSchema, llm_engineOptions } from "./constants";
 import { Empty } from "@/components/empty";
 import { Loader } from "@/components/loader";
 import { cn } from "@/lib/utils";
@@ -29,16 +32,10 @@ const ChatPage = () => {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            llm_engine: "AkashChat", // Default value for model
+            llm_engine: "PhDBot", // Default value for model
             prompt: "",
         }
     });
-
-    const [selectedLLMEngine, setSelectedLLMEngine] = useState(form.getValues("llm_engine"));
-    const handleChange = (event) => {
-        setSelectedLLMEngine(event.target.value);
-        form.setValue("llm_engine", event.target.value); // Update form value
-    };
 
     const isLoading = form.formState.isSubmitting;
 
@@ -86,28 +83,31 @@ const ChatPage = () => {
                             onSubmit={form.handleSubmit(onSubmit)}
                             className="rounded-lg border w-full p-4 px-3 md:px-6 focus-within:shadow-sm grid grid-cols-12 gap-2"
                         >
-                            <FormField
+                             <FormField
+                                control={form.control}
                                 name="llm_engine"
                                 render={({ field }) => (
                                     <FormItem className="col-span-12 lg:col-span-12 w-full">
                                         <FormLabel className="font-bold">LLM Engine</FormLabel>
-                                        <FormControl className="m-0 p-0">
-                                            <select
-                                                className="border-0 outline-none focus-visible:ring-0 focus-visible:ring-transparent"
-                                                disabled={isLoading}
-                                                value={selectedLLMEngine} // Set the value to state
-                                                onChange={(event) => {
-                                                    handleChange(event);
-                                                    field.onChange(event); // Call field's onChange
-                                                }}
-                                                {...field}
-                                            >
-                                                <option value="AkashChat">AkashChat</option>
-                                                <option value="OpenAI">OpenAI</option>
-                                                <option value="PhDBot">PhDBot</option>
-                                                <option value="Ollama">Ollama</option>
-                                            </select>
-                                        </FormControl>
+                                        <Select
+                                            disabled={isLoading}
+                                            onValueChange={field.onChange}
+                                            value={field.value}
+                                            defaultValue={field.value}
+                                        >
+                                            <FormControl>
+                                                <SelectTrigger>
+                                                    <SelectValue defaultValue={field.value} />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                {llm_engineOptions.map((option) => (
+                                                    <SelectItem key={option.value} value={option.value}>
+                                                        {option.label}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
                                     </FormItem>
                                 )}
                             />
@@ -157,9 +157,21 @@ const ChatPage = () => {
                                 )}
                             >
                                 {message.role === "user" ? <UserAvatar /> : <BotAvatar />}
-                                <div className="text-sm">
-                                    {message.content}
-                                </div>
+                                <ReactMarkdown
+                                components={{
+                                    pre: ({node, ...props}) => (
+                                        <div className="overflow-auto w-full my-2 bg-black/10 p-2 rounded-lg">
+                                            <pre {...props}/>
+                                        </div>
+                                    ),
+                                    code: ({node, ...props}) => (
+                                        <code className="bg-black/10 rounded-lg p-1" {...props}/>
+                                    ),
+                                }}
+                                className="text-sm overflow-hidden leading-7"
+                                >
+                                    {message.content || ""}
+                                </ReactMarkdown>
                             </div>
                         ))}
                     </div>

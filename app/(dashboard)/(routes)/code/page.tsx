@@ -13,10 +13,12 @@ import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { ChatCompletionMessageParam } from "openai/resources/index.mjs";
 import ReactMarkdown from "react-markdown";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 
 // Local here
 import { Heading } from "@/components/heading";
-import { formSchema } from "./constants";
+import { formSchema, llm_engineOptions } from "./constants";
 import { Empty } from "@/components/empty";
 import { Loader } from "@/components/loader";
 import { cn } from "@/lib/utils";
@@ -29,17 +31,10 @@ const CodePage = () => {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            llm_engine: "AkashChat", // Default value for model
+            llm_engine: "PhDBot", // Default value for model
             prompt: "",
         }
     });
-
-    const [selectedLLMEngine, setSelectedLLMEngine] = useState(form.getValues("llm_engine"));
-    const handleChange = (event) => {
-        setSelectedLLMEngine(event.target.value);
-        form.setValue("llm_engine", event.target.value); // Update form value
-    };
-
     const isLoading = form.formState.isSubmitting;
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
@@ -84,28 +79,31 @@ const CodePage = () => {
                             onSubmit={form.handleSubmit(onSubmit)}
                             className="rounded-lg border w-full p-4 px-3 md:px-6 focus-within:shadow-sm grid grid-cols-12 gap-2"
                         >
-                            <FormField
+                             <FormField
+                                control={form.control}
                                 name="llm_engine"
                                 render={({ field }) => (
                                     <FormItem className="col-span-12 lg:col-span-12 w-full">
-                                        <FormLabel>LLM Engine</FormLabel>
-                                        <FormControl className="m-0 p-0">
-                                            <select
-                                                className="border-0 outline-none focus-visible:ring-0 focus-visible:ring-transparent"
-                                                disabled={isLoading}
-                                                value={selectedLLMEngine} // Set the value to state
-                                                onChange={(event) => {
-                                                    handleChange(event);
-                                                    field.onChange(event); // Call field's onChange
-                                                }}
-                                                {...field}
-                                            >
-                                                <option value="AkashChat">AkashChat</option>
-                                                <option value="OpenAI">OpenAI</option>
-                                                <option value="PhDBot">PhDBot</option>
-                                                <option value="Ollama">Ollama</option>
-                                            </select>
-                                        </FormControl>
+                                        <FormLabel className="font-bold">LLM Engine</FormLabel>
+                                        <Select
+                                            disabled={isLoading}
+                                            onValueChange={field.onChange}
+                                            value={field.value}
+                                            defaultValue={field.value}
+                                        >
+                                            <FormControl>
+                                                <SelectTrigger>
+                                                    <SelectValue defaultValue={field.value} />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                {llm_engineOptions.map((option) => (
+                                                    <SelectItem key={option.value} value={option.value}>
+                                                        {option.label}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
                                     </FormItem>
                                 )}
                             />
