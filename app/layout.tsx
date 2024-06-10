@@ -9,6 +9,9 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "PhDBot",
   description: "Personalized PhD-Level AI-Agents",
+  icons: {
+    icon: '/PhDBot_Icon.png',
+  }
 };
 
 export default function RootLayout({

@@ -2,7 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 import { ChatCompletionMessageParam } from "openai/resources/index.mjs";
-
+import { increaseApiLimit, checkApiLimit } from "@/lib/api-limit";
 
 const instructionMessage: ChatCompletionMessageParam = {
     role: "system",
@@ -21,6 +21,12 @@ export async function POST(req: Request) {
 
         if (!messages) {
             return new NextResponse("Messages are required", { status: 400 });
+        }
+
+        const freeTrial = await checkApiLimit();
+
+        if (!freeTrial){
+            return new NextResponse("Dear User, your free trial credits has ended. Top-Up to continue.", { status: 403 });
         }
 
         let openai: OpenAI;
@@ -63,6 +69,8 @@ export async function POST(req: Request) {
             model: modelToUse,
             messages: [instructionMessage, ...messages],
         });
+
+        await increaseApiLimit();
 
         // Log the response for debugging
         console.log("Code response:", response.choices[0].message);

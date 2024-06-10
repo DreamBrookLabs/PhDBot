@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import OpenAI from "openai";
 import { ChatCompletionMessageParam } from "openai/resources/index.mjs";
 
+import { increaseApiLimit, checkApiLimit } from "@/lib/api-limit";
+
 
 // Repositories of Instruction messages 
 // TO-DO in the future this suppose to be modifiable by user, or can be uploaded
@@ -57,6 +59,13 @@ export async function POST(req: Request) {
             return new NextResponse("Messages are required", { status: 400 });
         }
 
+
+        const freeTrial = await checkApiLimit();
+
+        if (!freeTrial){
+            return new NextResponse("Dear User, your free trial credits has ended. Top-Up to continue.", { status: 403 });
+        }
+
         let openai: OpenAI;
         let modelToUse: string;
 
@@ -101,6 +110,8 @@ export async function POST(req: Request) {
             model: modelToUse,
             messages: [instructionMessage, ...messages],
         });
+
+        await increaseApiLimit();
 
         // Log the response for debugging
         console.log("Chat response:", response.choices[0].message);

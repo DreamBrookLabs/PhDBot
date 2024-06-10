@@ -1,7 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
-
+import { increaseApiLimit, checkApiLimit } from "@/lib/api-limit";
 
 // TO-DO Repositories of image generation styles
 
@@ -29,6 +29,13 @@ export async function POST(req: Request) {
             return new NextResponse("Resolution is required", { status: 400 });
         }
 
+        const freeTrial = await checkApiLimit();
+
+        if (!freeTrial){
+            return new NextResponse("Dear User, your free trial credits has ended. Top-Up to continue.", { status: 403 });
+        }
+
+
         let client: OpenAI;
 
         client = new OpenAI({
@@ -44,6 +51,7 @@ export async function POST(req: Request) {
         });
 
         // Consider options to create variations too.
+        await increaseApiLimit();
 
         // Log the entire response for debugging
         console.log("Entire response:", response);
