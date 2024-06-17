@@ -20,9 +20,11 @@ import { Heading } from "@/components/heading";
 import { formSchema, llm_engineOptions } from "./constants";
 import { Empty } from "@/components/empty";
 import { Loader } from "@/components/loader";
+import { useProModal } from "@/hooks/use-pro-modal";
 
 
 const AudioPage = () => {
+    const proModal = useProModal();
     const router = useRouter();
     const [audio, setAudio] = useState<string>();
     
@@ -47,6 +49,10 @@ const AudioPage = () => {
             
             form.reset({ prompt: "", llm_engine: values.llm_engine }); // Preserve selected LLM engine
         } catch (error: any) {
+            if (error?.response?.status  === 403){
+                proModal.onOpen();
+            }
+
             if (error.code === 'ETIMEDOUT') {
                 console.log('Request timed out. Please try again.');
             } else {

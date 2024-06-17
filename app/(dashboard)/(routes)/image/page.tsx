@@ -20,8 +20,10 @@ import { Heading } from "@/components/heading";
 import { amountOptions, formSchema, resolutionOptions } from "./constants";
 import { Empty } from "@/components/empty";
 import { Loader } from "@/components/loader";
+import { useProModal } from "@/hooks/use-pro-modal";
 
 const ImagePage = () => {
+    const proModal = useProModal();
     const router = useRouter();
     const [images, setImages] = useState<string[]>([]);
 
@@ -47,6 +49,10 @@ const ImagePage = () => {
             //form.reset();
             form.reset({ prompt: values.prompt }); // modify to print out the prompt instead of reset
         } catch (error: any) {
+            if (error?.response?.status  === 403){
+                proModal.onOpen();
+            }
+
             if (error.code === "ETIMEDOUT") {
                 console.log("Request timed out. Please try again.");
             } else {

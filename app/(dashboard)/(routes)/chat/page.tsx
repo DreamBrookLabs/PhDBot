@@ -24,8 +24,10 @@ import { Loader } from "@/components/loader";
 import { cn } from "@/lib/utils";
 import { UserAvatar } from "@/components/user-avatar";
 import { BotAvatar } from "@/components/bot-avatar";
+import { useProModal } from "@/hooks/use-pro-modal";
 
 const ChatPage = () => {
+    const proModal = useProModal();
     const router = useRouter();
     const [messages, setMessages] = useState<ChatCompletionMessageParam[]>([]);
     
@@ -57,6 +59,10 @@ const ChatPage = () => {
             setMessages((current) => [...current, userMessage, response.data]);
             form.reset({ prompt: "", llm_engine: values.llm_engine }); // Preserve selected LLM engine
         } catch (error: any) {
+            if (error?.response?.status  === 403){
+                proModal.onOpen();
+            }
+
             if (error.code === 'ETIMEDOUT') {
                 console.log('Request timed out. Please try again.');
             } else {
