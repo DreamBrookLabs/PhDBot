@@ -16,6 +16,15 @@ bun dev
 
 Open [http://localhost:3001](http://localhost:3001) with your browser to see the result.
 
+## Pages
+
+### Landing Page (`/home`)
+The landing page provides an overview of PhDBot's capabilities, featuring:
+- Hero section with call-to-action buttons
+- Sign-up and login navigation
+- Dashboard access
+- Information about PhD-level AI agents
+
 To look or modify the backend database 
 
 ```bash 
