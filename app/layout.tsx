@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   title: "PhDBot",
   description: "Personalized PhD-Level AI-Agents",
   icons: {
-    icon: '/PhDBot_Icon.png',
+    icon: '/PhDBot_transparent.png',
   }
 };
 
